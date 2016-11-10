@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package pb;
+
+service Player {
+  rpc Info (PlayerInfoRequest) returns (PlayerInfoResponse) {
+      //      option (google.api.http) = {
+      //          get: "/api/userinfo"
+      //      };
+  };
+  rpc Entry (PlayerEntryRequest) returns (PlayerEntryResponse) {};
+  rpc Comment (PlayerCommentRequest) returns (PlayerCommentResponse) {};
+
+}
+
+message PlayerInfoRequest {
+    uint64 player_id = 1;
+}
+
+message PlayerInfoResponse {
+    uint64 id = 1;
+    string name = 2;
+    uint64 money = 3;
+    int64 last_logined_at = 4;
+}
+
+message PlayerEntryRequest {
+    uint64 player_id = 1;
+}
+
+message PlayerEntryResponse {
+    uint64 player_id = 1;
+    repeated uint32 entry_id = 2;
+}
+
+
+message PlayerComment {
+    uint64 id = 1;
+    uint32 entry_id = 2;
+    string comment = 3;
+    int64 created_at = 4;
+    int64 updated_at = 5;
+}
+
+message PlayerCommentRequest {
+    uint64 player_id = 1;
+}
+
+message PlayerCommentResponse {
+    uint64 id = 1;
+    repeated PlayerComment player_comment = 2;
+}
