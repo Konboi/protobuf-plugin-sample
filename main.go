@@ -10,7 +10,9 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/Konboi/protobuf-plugin-example/middleware"
 	"github.com/golang/protobuf/proto"
+	descriptor "github.com/golang/protobuf/protoc-gen-go/descriptor"
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	//"github.com/k0kubun/pp"
 	"github.com/serenize/snaker"
@@ -33,6 +35,8 @@ type Method struct {
 	//	Response Message
 	Request  string
 	Response string
+	Before   []string
+	After    []string
 }
 
 type Message struct {
@@ -72,7 +76,6 @@ func main() {
 
 func pb2go(req *plugin.CodeGeneratorRequest, res *plugin.CodeGeneratorResponse) error {
 	res.File = make([]*plugin.CodeGeneratorResponse_File, 0, len(req.ProtoFile))
-	log.Println(req.GetParameter())
 	for _, file := range req.GetProtoFile() {
 		//log.Println("load", file.GetName())
 		prt := Proto{}
@@ -82,6 +85,7 @@ func pb2go(req *plugin.CodeGeneratorRequest, res *plugin.CodeGeneratorResponse) 
 		for _, service := range file.GetService() {
 			s := Service{}
 			s.Name = service.GetName()
+
 			s.Methods = make([]Method, 0, len(service.GetMethod()))
 			fileName = strings.ToLower(service.GetName())
 
@@ -90,6 +94,12 @@ func pb2go(req *plugin.CodeGeneratorRequest, res *plugin.CodeGeneratorResponse) 
 				m.Name = method.GetName()
 				m.Request = method.GetInputType()
 				m.Response = method.GetOutputType()
+				before, after, err := parseMiddlewareOption(method)
+				if err != nil {
+					log.Fatal(err)
+				}
+				m.Before = before
+				m.After = after
 				s.Methods = append(s.Methods, m)
 			}
 			prt.Services = append(prt.Services, s)
@@ -109,19 +119,46 @@ func pb2go(req *plugin.CodeGeneratorRequest, res *plugin.CodeGeneratorResponse) 
 			prt.Messages = append(prt.Messages, msg)
 		}
 
-		file, err := os.OpenFile(fmt.Sprintf("tmp/%s.auto.go", fileName), os.O_RDWR, 0644)
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
+		if fileName != "" {
+			file, err := os.OpenFile(fmt.Sprintf("tmp/%s.auto.go", fileName), os.O_RDWR, 0644)
+			if err != nil {
+				log.Fatal(err)
+			}
+			defer file.Close()
 
-		err = controllerTmpl.Execute(file, prt)
-		if err != nil {
-			log.Fatal(err)
+			err = controllerTmpl.Execute(file, prt)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 	}
 	return nil
+}
+
+func parseMiddlewareOption(method *descriptor.MethodDescriptorProto) (before, after []string, err error) {
+	before, after = make([]string, 0), make([]string, 0)
+
+	if !proto.HasExtension(method.Options, middleware.E_Middleware) {
+		return before, after, nil
+	}
+
+	ext, err := proto.GetExtension(method.Options, middleware.E_Middleware)
+	if err != nil {
+		return before, after, err
+
+	}
+
+	opts, ok := ext.([]*middleware.Middleware)
+	if !ok {
+		return before, after, fmt.Errorf("ext is %T", ext)
+	}
+	for _, opt := range opts {
+		before = append(before, opt.GetBefore())
+		after = append(after, opt.GetAfter())
+	}
+
+	return before, after, err
 }
 
 func (m Method) Path() string {
@@ -129,6 +166,35 @@ func (m Method) Path() string {
 	path := strings.Replace(snakerName, "_", "/", -1)
 
 	return path
+}
+
+func (m Method) Handler() string {
+	handler := fmt.Sprintf("%sHandler", m.Name)
+	beforeFilter := ""
+	afterFilter := ""
+
+	bracketNum := 0
+	for _, filter := range m.Before {
+		if filter == "" {
+			continue
+		}
+
+		beforeFilter = fmt.Sprintf("%s(%s", filter, beforeFilter)
+		bracketNum++
+	}
+
+	for _, filter := range m.After {
+		if filter == "" {
+			continue
+		}
+
+		afterFilter = fmt.Sprintf("%s(%s", afterFilter, filter)
+		bracketNum++
+	}
+
+	handler = fmt.Sprintf("%s%s%s%s", beforeFilter, handler, afterFilter, strings.Repeat(")", bracketNum))
+	log.Println(handler)
+	return handler
 }
 
 func (s Service) Path() string {
@@ -151,7 +217,7 @@ func (m Message) IsRequest() bool {
 }
 
 func init() {
-	tmpl := `package api
+	tmpl := `package sample
 
 import (
 	_ "io/ioutil"
@@ -171,7 +237,8 @@ func NewServer(c {{ .Name }}) *http.ServeMux {
 	server := http.NewServeMux()
     {{ $service := . }}
     {{ range .Methods }}
-	server.HandleFunc("{{ $service.Path }}/{{ .Path }}", c.{{ .Name }}Handler){{ end }}
+	server.HandleFunc("{{ $service.Path }}/{{ .Path }}", {{ .Handler }})
+    {{ end }}
 
 	return server
 }

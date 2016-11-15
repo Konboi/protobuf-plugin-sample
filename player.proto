@@ -1,12 +1,17 @@
 syntax = "proto3";
 
+import "middleware.proto";
+
 package pb;
 
 service Player {
   rpc Info (PlayerInfoRequest) returns (PlayerInfoResponse) {
-      //      option (google.api.http) = {
-      //          get: "/api/userinfo"
-      //      };
+      option (middleware.middleware) = {
+          before: "hoge.Signature"
+      };
+      option (middleware.middleware) = {
+          before: "fuga.Signature"
+      };
   };
   rpc Entry (PlayerEntryRequest) returns (PlayerEntryResponse) {};
   rpc Comment (PlayerCommentRequest) returns (PlayerCommentResponse) {};

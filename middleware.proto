@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+package middleware;
+
+message Middleware{
+    oneof type {
+        // before middleware
+        string before = 2;
+        // after middleware
+        string after = 3;
+    }
+}
+
+extend google.protobuf.MethodOptions {
+    repeated Middleware middleware = 1000;
+}
