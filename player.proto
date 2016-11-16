@@ -10,7 +10,8 @@ service Player {
           before: "hoge.A"
           before: "hoge.B"
           before: "hoge.C"
-          after: "fuga.Common"
+          after: "fuga.A"
+          after: "fuga.B"
       };
   };
   rpc Entry (PlayerEntryRequest) returns (PlayerEntryResponse) {};
