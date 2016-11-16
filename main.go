@@ -149,14 +149,13 @@ func parseMiddlewareOption(method *descriptor.MethodDescriptorProto) (before, af
 
 	}
 
-	opts, ok := ext.([]*middleware.Middleware)
+	opt, ok := ext.(*middleware.Middleware)
 	if !ok {
 		return before, after, fmt.Errorf("ext is %T", ext)
 	}
-	for _, opt := range opts {
-		before = append(before, opt.GetBefore())
-		after = append(after, opt.GetAfter())
-	}
+
+	after = append(after, opt.After...)
+	before = append(before, opt.Before...)
 
 	return before, after, err
 }
