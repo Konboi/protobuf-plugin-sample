@@ -30,10 +30,8 @@ var _ = math.Inf
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type Middleware struct {
-	// Types that are valid to be assigned to Type:
-	//	*Middleware_Before
-	//	*Middleware_After
-	Type isMiddleware_Type `protobuf_oneof:"type"`
+	Before []string `protobuf:"bytes,1000,rep,name=before" json:"before,omitempty"`
+	After  []string `protobuf:"bytes,1001,rep,name=after" json:"after,omitempty"`
 }
 
 func (m *Middleware) Reset()                    { *m = Middleware{} }
@@ -41,113 +39,12 @@ func (m *Middleware) String() string            { return proto.CompactTextString
 func (*Middleware) ProtoMessage()               {}
 func (*Middleware) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
 
-type isMiddleware_Type interface {
-	isMiddleware_Type()
-}
-
-type Middleware_Before struct {
-	Before string `protobuf:"bytes,2,opt,name=before,oneof"`
-}
-type Middleware_After struct {
-	After string `protobuf:"bytes,3,opt,name=after,oneof"`
-}
-
-func (*Middleware_Before) isMiddleware_Type() {}
-func (*Middleware_After) isMiddleware_Type()  {}
-
-func (m *Middleware) GetType() isMiddleware_Type {
-	if m != nil {
-		return m.Type
-	}
-	return nil
-}
-
-func (m *Middleware) GetBefore() string {
-	if x, ok := m.GetType().(*Middleware_Before); ok {
-		return x.Before
-	}
-	return ""
-}
-
-func (m *Middleware) GetAfter() string {
-	if x, ok := m.GetType().(*Middleware_After); ok {
-		return x.After
-	}
-	return ""
-}
-
-// XXX_OneofFuncs is for the internal use of the proto package.
-func (*Middleware) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
-	return _Middleware_OneofMarshaler, _Middleware_OneofUnmarshaler, _Middleware_OneofSizer, []interface{}{
-		(*Middleware_Before)(nil),
-		(*Middleware_After)(nil),
-	}
-}
-
-func _Middleware_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
-	m := msg.(*Middleware)
-	// type
-	switch x := m.Type.(type) {
-	case *Middleware_Before:
-		b.EncodeVarint(2<<3 | proto.WireBytes)
-		b.EncodeStringBytes(x.Before)
-	case *Middleware_After:
-		b.EncodeVarint(3<<3 | proto.WireBytes)
-		b.EncodeStringBytes(x.After)
-	case nil:
-	default:
-		return fmt.Errorf("Middleware.Type has unexpected type %T", x)
-	}
-	return nil
-}
-
-func _Middleware_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
-	m := msg.(*Middleware)
-	switch tag {
-	case 2: // type.before
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Type = &Middleware_Before{x}
-		return true, err
-	case 3: // type.after
-		if wire != proto.WireBytes {
-			return true, proto.ErrInternalBadWireType
-		}
-		x, err := b.DecodeStringBytes()
-		m.Type = &Middleware_After{x}
-		return true, err
-	default:
-		return false, nil
-	}
-}
-
-func _Middleware_OneofSizer(msg proto.Message) (n int) {
-	m := msg.(*Middleware)
-	// type
-	switch x := m.Type.(type) {
-	case *Middleware_Before:
-		n += proto.SizeVarint(2<<3 | proto.WireBytes)
-		n += proto.SizeVarint(uint64(len(x.Before)))
-		n += len(x.Before)
-	case *Middleware_After:
-		n += proto.SizeVarint(3<<3 | proto.WireBytes)
-		n += proto.SizeVarint(uint64(len(x.After)))
-		n += len(x.After)
-	case nil:
-	default:
-		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
-	}
-	return n
-}
-
 var E_Middleware = &proto.ExtensionDesc{
 	ExtendedType:  (*google_protobuf.MethodOptions)(nil),
-	ExtensionType: ([]*Middleware)(nil),
-	Field:         1000,
+	ExtensionType: (*Middleware)(nil),
+	Field:         123456,
 	Name:          "middleware.middleware",
-	Tag:           "bytes,1000,rep,name=middleware",
+	Tag:           "bytes,123456,opt,name=middleware",
 }
 
 func init() {
@@ -158,16 +55,16 @@ func init() {
 func init() { proto.RegisterFile("middleware.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 174 bytes of a gzipped FileDescriptorProto
+	// 166 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xe2, 0x12, 0xc8, 0xcd, 0x4c, 0x49,
 	0xc9, 0x49, 0x2d, 0x4f, 0x2c, 0x4a, 0xd5, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x42, 0x88,
 	0x48, 0x29, 0xa4, 0xe7, 0xe7, 0xa7, 0xe7, 0xa4, 0xea, 0x83, 0x65, 0x92, 0x4a, 0xd3, 0xf4, 0x53,
-	0x52, 0x8b, 0x93, 0x8b, 0x32, 0x0b, 0x4a, 0xf2, 0x8b, 0x20, 0xaa, 0x95, 0xdc, 0xb8, 0xb8, 0x7c,
-	0xe1, 0xea, 0x85, 0x24, 0xb8, 0xd8, 0x92, 0x52, 0xd3, 0xf2, 0x8b, 0x52, 0x25, 0x98, 0x14, 0x18,
-	0x35, 0x38, 0x3d, 0x18, 0x82, 0xa0, 0x7c, 0x21, 0x31, 0x2e, 0xd6, 0xc4, 0xb4, 0x92, 0xd4, 0x22,
-	0x09, 0x66, 0xa8, 0x04, 0x84, 0xeb, 0xc4, 0xc6, 0xc5, 0x52, 0x52, 0x59, 0x90, 0x6a, 0x15, 0xce,
-	0x85, 0x64, 0xaf, 0x90, 0x9c, 0x1e, 0xc4, 0x62, 0x3d, 0x98, 0xc5, 0x7a, 0xbe, 0xa9, 0x25, 0x19,
-	0xf9, 0x29, 0xfe, 0x05, 0x25, 0x99, 0xf9, 0x79, 0xc5, 0x12, 0x2f, 0xd8, 0x15, 0x98, 0x35, 0xb8,
-	0x8d, 0xc4, 0xf4, 0x90, 0x5c, 0x8f, 0x70, 0x46, 0x10, 0x92, 0x51, 0x49, 0x6c, 0x60, 0x23, 0x8c,
-	0x01, 0x01, 0x00, 0x00, 0xff, 0xff, 0x10, 0x81, 0x0a, 0x55, 0xe9, 0x00, 0x00, 0x00,
+	0x52, 0x8b, 0x93, 0x8b, 0x32, 0x0b, 0x4a, 0xf2, 0x8b, 0x20, 0xaa, 0x95, 0x6c, 0xb8, 0xb8, 0x7c,
+	0xe1, 0xea, 0x85, 0xc4, 0xb9, 0xd8, 0x92, 0x52, 0xd3, 0xf2, 0x8b, 0x52, 0x25, 0x5e, 0xb0, 0x2b,
+	0x30, 0x6b, 0x70, 0x06, 0x41, 0xb9, 0x42, 0xa2, 0x5c, 0xac, 0x89, 0x69, 0x25, 0xa9, 0x45, 0x12,
+	0x2f, 0x21, 0xe2, 0x10, 0x9e, 0x55, 0x04, 0x17, 0x92, 0x6d, 0x42, 0x72, 0x7a, 0x10, 0xeb, 0xf4,
+	0x60, 0xd6, 0xe9, 0xf9, 0xa6, 0x96, 0x64, 0xe4, 0xa7, 0xf8, 0x17, 0x94, 0x64, 0xe6, 0xe7, 0x15,
+	0x4b, 0x1c, 0x38, 0xc2, 0xae, 0xc0, 0xa8, 0xc1, 0x6d, 0x24, 0xa6, 0x87, 0xe4, 0x68, 0x84, 0xed,
+	0x41, 0x48, 0x66, 0x25, 0xb1, 0x81, 0xcd, 0x30, 0x06, 0x04, 0x00, 0x00, 0xff, 0xff, 0xa5, 0xbc,
+	0x8a, 0x1e, 0xe0, 0x00, 0x00, 0x00,
 }
