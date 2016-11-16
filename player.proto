@@ -1,16 +1,16 @@
 syntax = "proto3";
 
-import "middleware.proto";
+import "middleware/middleware.proto";
 
 package pb;
 
 service Player {
   rpc Info (PlayerInfoRequest) returns (PlayerInfoResponse) {
       option (middleware.middleware) = {
-          before: "hoge.Signature"
-      };
-      option (middleware.middleware) = {
-          before: "fuga.Signature"
+          before: "hoge.A"
+          before: "hoge.B"
+          before: "hoge.C"
+          after: "fuga.Common"
       };
   };
   rpc Entry (PlayerEntryRequest) returns (PlayerEntryResponse) {};
